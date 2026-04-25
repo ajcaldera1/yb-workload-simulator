@@ -56,4 +56,19 @@ public class WorkloadConfig {
         return new CloudantWorkload();
     }
 
+    @Bean(name="TokenDemoWorkload")
+    public WorkloadSimulation tokenDemoWorkload(TokenDemoWorkload workload){
+        return workload;
+    }
+
+    @Bean(name="TokenReadOnlyWorkload")
+    public WorkloadSimulation tokenReadOnlyWorkload(TokenReadOnlyWorkload workload){
+        return workload;
+    }
+
+    @Bean(name="TokenCteWorkload")
+    public WorkloadSimulation tokenCteWorkload(TokenCteWorkload workload){
+        return workload;
+    }
+
 }

@@ -129,17 +129,25 @@ public abstract class WorkloadTypeInstance {
 	}
 	
 	private Exception lastException = null;
+	private int repeatedExceptionCount = 0;
 	protected void handleException(Exception e) {
 		if (LOGGER.isErrorEnabled()) {
 			if (lastException == null || lastException.getClass() != e.getClass() || 
 					(e.getStackTrace().length > 0 && lastException.getStackTrace().length > 0 && !e.getStackTrace()[0].toString().equals( lastException.getStackTrace()[0].toString()))) {
-					
+				if (repeatedExceptionCount > 0) {
+					System.err.println(" (same exception repeated " + repeatedExceptionCount + " times)");
+					repeatedExceptionCount = 0;
+				}
 				System.err.println("Exception thrown from workload " + this.getWorkloadId() + " of type "+ this.getType().getTypeName());
 				e.printStackTrace();
 				lastException = e;
 			}
 			else {
-				System.err.print("\"");
+				repeatedExceptionCount++;
+				// Log a summary every 1000 repeats to avoid silent failure, without flooding
+				if (repeatedExceptionCount == 1 || repeatedExceptionCount % 1000 == 0) {
+					System.err.println(" (same exception repeated " + repeatedExceptionCount + (repeatedExceptionCount == 1 ? " time)" : " times)"));
+				}
 			}
 		}
 	}
