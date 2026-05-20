@@ -71,4 +71,9 @@ public class WorkloadConfig {
         return workload;
     }
 
+    @Bean(name="UserLoginWorkload")
+    public WorkloadSimulation userLoginWorkload(UserLoginWorkload workload) {
+        return workload;
+    }
+
 }
