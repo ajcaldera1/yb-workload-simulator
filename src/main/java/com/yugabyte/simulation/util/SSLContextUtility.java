@@ -6,6 +6,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.net.InetSocketAddress;
 import java.security.KeyStore;
@@ -14,6 +15,18 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 public class SSLContextUtility {
+
+    public static void validateCertificatePem(String certificatePem) {
+        if (certificatePem == null || certificatePem.trim().isEmpty()) {
+            throw new IllegalArgumentException("Certificate PEM content is required");
+        }
+        try {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            cf.generateCertificate(new ByteArrayInputStream(certificatePem.getBytes("UTF-8")));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid X.509 certificate PEM: " + e.getMessage(), e);
+        }
+    }
 
     // Load the cluster root certificate
     public static SSLContext createSSLHandler(String certfile) {

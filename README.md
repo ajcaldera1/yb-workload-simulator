@@ -128,6 +128,72 @@ To view the application UI, navigate to <http://localhost:8080>
 
 The Latency and Throughput charts show the workload running on the cluster.
 
+## REST API (headless configuration)
+
+The v1 REST API lets you configure database SSL certificates, discover any registered workload, and execute operations or pipelines without using the UI.
+
+### Database configuration
+
+Upload a root CA certificate:
+
+```sh
+curl -s -X POST http://localhost:8080/api/v1/database/certificates \
+  -H "Content-Type: application/json" \
+  -d '{"certId":"yb-managed-root","certificatePem":"-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"}'
+```
+
+Configure the database connection (triggers a connection pool reload):
+
+```sh
+curl -s -X POST http://localhost:8080/api/v1/database/connection \
+  -H "Content-Type: application/json" \
+  -d '{
+    "host": "yb-cluster.example.com",
+    "port": 5433,
+    "databaseName": "yugabyte",
+    "username": "admin",
+    "password": "secret",
+    "ssl": true,
+    "sslMode": "verify-full",
+    "sslRootCertId": "yb-managed-root"
+  }'
+```
+
+You can also pass `sslRootCert` inline in the connection request to upload and configure in one step.
+
+### Workload discovery and execution
+
+List all registered workloads:
+
+```sh
+curl -s http://localhost:8080/api/v1/workloads | jq .
+```
+
+Execute a single operation with named parameters:
+
+```sh
+curl -s -X POST http://localhost:8080/api/v1/workloads/UserLoginWorkload/operations/SEED_DATA/execute \
+  -H "Content-Type: application/json" \
+  -d '{"parameters":{"Number of accounts":10000,"Threads":32}}'
+```
+
+Run a full pipeline (create tables, seed, simulate):
+
+```sh
+curl -s -X POST http://localhost:8080/api/v1/workloads/UserLoginWorkload/pipelines/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "waitForCompletion": true,
+    "steps": [
+      {"operationId":"CREATE_TABLES"},
+      {"operationId":"SEED_DATA","parameters":{"Number of accounts":10000,"Threads":32}},
+      {"operationId":"RUN_SIMULATION","parameters":{"Invocations":100000,"Seeded accounts":10000,"Threads":32}}
+    ]
+  }'
+```
+
+Poll workload progress using the existing endpoints `GET /api/get-active-workloads` and `GET /api/getResults/{afterTime}`.
+
 ## Create your own workload
 It is very easy to bring in your Data Model and run simulations against it.
 1. Navigate to following directory: src/main/java/com/yugabyte/simulation/service
