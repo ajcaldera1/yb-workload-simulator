@@ -76,4 +76,9 @@ public class WorkloadConfig {
         return workload;
     }
 
+    @Bean(name="RtpWorkload")
+    public WorkloadSimulation rtpWorkload(RtpWorkload workload) {
+        return workload;
+    }
+
 }
