@@ -1,4 +1,4 @@
-SELECT account_id, owning_party_id, currency_code, geo_partition
+SELECT a.account_id, a.owning_party_id, a.currency_code, a.geo_partition
   FROM rtp.accounts a
   JOIN rtp.parties p ON p.party_id = a.owning_party_id
    AND p.geo_partition = a.geo_partition
